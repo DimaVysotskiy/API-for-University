@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .base_repository import BaseRepository
 from ..models import User, RoleInSystem
 from datetime import datetime
-from ..utils import hash_password, verify_password
+from ..core import hash_password, verify_password
 
 
 class UserRepository(BaseRepository[User]):
@@ -25,9 +25,24 @@ class UserRepository(BaseRepository[User]):
     
     async def add_user(self, session: AsyncSession, user_login: str, role: RoleInSystem, password: str) -> Optional[int]:
         """Добавляем пользователя в бд."""
-        stmt = insert(User).values(user_login=user_login, role=role, password_hash=hash_password(password), created_at=datetime.now()).returning(User.id)
+        # Проверяем, не существует ли уже пользователь с таким логином
+        if await self.check_user_in_db_by_login(session, user_login):
+            raise ValueError(f"User with login '{user_login}' already exists")
+        
+        # Конвертируем enum в строку (role.name вернет 'student', 'teacher' или 'admin')
+        role_str = role.name
+        
+        # Await hash_password, так как это async функция
+        password_hash = await hash_password(password)
+        
+        stmt = insert(User).values(
+            user_login=user_login, 
+            user_role=role_str,  # Используем строку вместо enum
+            password_hash=password_hash, 
+            created_at=datetime.now()
+        ).returning(User.id)
         result = await session.execute(statement=stmt)
-        new_user_id = await result.scalar_one_or_none()
+        new_user_id = result.scalar_one_or_none()
         await session.commit()
         return new_user_id
     
@@ -35,7 +50,6 @@ class UserRepository(BaseRepository[User]):
         """Аутентификация пользователя по логину и паролю."""
         stmt = select(User).where(User.user_login == user_login)
         user = await session.scalar(stmt)
-        
         if user and await verify_password(password, user.password_hash):
             return user.id
         return None

@@ -6,7 +6,7 @@ from sqlalchemy import select, delete, update
 
 
 
-from ..db import Base 
+from ..core import Base
 
 
 ModelType = TypeVar("ModelType", bound=Base)

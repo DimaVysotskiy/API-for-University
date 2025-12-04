@@ -10,15 +10,9 @@ async def hash_password(password: str) -> str:
     Возвращает:
         bytes: Байтовая строка с хешем, готовым для хранения в БД.
     """
-    # 1. Преобразуем строку пароля в байты
     password_bytes = password.encode('utf-8')
-    
-    # 2. Генерируем "соль" (salt) - случайную строку, которая делает хеш уникальным
     salt = bcrypt.gensalt()
-    
-    # 3. Хешируем пароль, используя соль
-    hashed_password = bcrypt.hashpw(password_bytes, salt).decode('utf-8')
-    
+    hashed_password = bcrypt.hashpw(password_bytes, salt)
     return hashed_password.decode('utf-8')
 
 async def verify_password(password: str, hashed_password: str) -> bool:
@@ -27,13 +21,11 @@ async def verify_password(password: str, hashed_password: str) -> bool:
     
     Аргументы:
         password (str): Пароль, введенный пользователем при входе.
-        hashed_password (bytes): Хеш пароля, извлеченный из БД.
+        hashed_password (str): Хеш пароля в виде строки, извлеченный из БД.
         
     Возвращает:
         bool: True, если пароли совпадают, иначе False.
     """
-    # Преобразуем введенный пароль в байты
     password_bytes = password.encode('utf-8')
-    
-    # bcrypt автоматически извлекает соль из хеша и сравнивает его
-    return bcrypt.checkpw(password_bytes, hashed_password.encode('utf-8'))
+    hashed_password_bytes = hashed_password.encode('utf-8')
+    return bcrypt.checkpw(password_bytes, hashed_password_bytes)
