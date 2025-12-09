@@ -1,10 +1,27 @@
 from .enums import RoleInSystem
-from .orm_models import User
-from .pydantic_models import UserCreate, AuthData
+from .orm_models import User, Group, StudentInfo
+from .pydantic_models import (
+    UserCreate, 
+    AuthData,
+    GroupCreate,
+    GroupUpdate,
+    GroupResponse,
+    StudentInfoCreate,
+    StudentInfoUpdate,
+    StudentInfoResponse
+)
 
 __all__ = [
     "User",
+    "Group",
+    "StudentInfo",
     "UserCreate",
     "RoleInSystem",
-    "AuthData"
+    "AuthData",
+    "GroupCreate",
+    "GroupUpdate",
+    "GroupResponse",
+    "StudentInfoCreate",
+    "StudentInfoUpdate",
+    "StudentInfoResponse"
 ]

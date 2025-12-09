@@ -4,10 +4,30 @@ services:
     image: postgres:latest
     env_file: .env
     ports:
-      - "${POSTGRES_PORT:-5432}:${POSTGRES_PORT:-5432}"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - ./db/postgres/init:/docker-entrypoint-initdb.d
       - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fastapi
+    env_file: .env
+    ports:
+      - "${API_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app/backend
+    restart: unless-stopped
 
 volumes:
   postgres_data:

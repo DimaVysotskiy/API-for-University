@@ -1,10 +1,19 @@
 from pydantic_settings import BaseSettings
+from dotenv import load_dotenv
+from pathlib import Path
+import os
+
+# Загружаем .env файл из корня проекта (если он существует)
+# В Docker переменные окружения загружаются через env_file в docker-compose
+env_path = Path(__file__).parent.parent.parent.parent / ".env"
+if env_path.exists():
+    load_dotenv(dotenv_path=env_path)
 
 
 class Settings(BaseSettings):
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
-    POSTGRES_HOST: str = "localhost"
+    POSTGRES_HOST: str = "postgres"  # Имя сервиса в docker-compose
     POSTGRES_PORT: int = 5432
     POSTGRES_DB: str
     POSTGRES_SCHEMA: str = "public"
@@ -16,6 +25,7 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     class Config:
         env_file = ".env"
+        env_file_encoding = "utf-8"
         case_sensitive = True
 
 
